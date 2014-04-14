@@ -16,9 +16,8 @@ namespace PHPThumb;
  * @link http://phpthumb.gxdlabs.com
  * @license http://www.opensource.org/licenses/mit-license.php The MIT License
  */
+abstract class PHPThumb {
 
-abstract class PHPThumb
-{
     /**
      * The name of the file we're manipulating
      * This must include the path to the file (absolute paths recommended)
@@ -57,13 +56,12 @@ abstract class PHPThumb
      * @param array $options
      * @param array $plugins
      */
-    public function __construct($fileName, array $options = array(), array $plugins = array())
-    {
+    public function __construct($fileName, array $options = array(), array $plugins = array()) {
         $this->filesystem = new \Symfony\Component\Filesystem\Filesystem();
-        $this->fileName    = $fileName;
+        $this->fileName = $fileName;
         $this->remoteImage = false;
 
-        if(!$this->validateRequestedResource($fileName)) {
+        if (!$this->validateRequestedResource($fileName)) {
             throw new \InvalidArgumentException("Image file not found: {$fileName}");
         }
 
@@ -74,6 +72,29 @@ abstract class PHPThumb
 
     abstract public function setOptions(array $options = array());
 
+    protected function getContentType($binary) {
+
+        if (!$binary)
+            return null;
+        if (
+                !preg_match(
+                        '/\A(?:(\xff\xd8\xff)|(GIF8[79]a)|(\x89PNG\x0d\x0a)|(BM)|(\x49\x49(?:\x2a\x00|\x00\x4a))|(FORM.{4}ILBM))/', $binary, $hits
+                )
+        ) {
+            return null;
+        }
+
+        static $type = array(
+    1 => 'image/jpeg',
+    2 => 'image/gif',
+    3 => 'image/png',
+    4 => 'image/x-windows-bmp',
+    5 => 'image/tiff',
+    6 => 'image/x-ilbm',
+        );
+        return $type[count($hits) - 1];
+    }
+
     /**
      * Check the provided filename/url. If it is a url, validate that it is properly
      * formatted. If it is a file, check to make sure that it actually exists on
@@ -82,16 +103,21 @@ abstract class PHPThumb
      * @param $filename
      * @return bool
      */
-    protected function validateRequestedResource($filename)
-    {
-        if(false !== filter_var($filename, FILTER_VALIDATE_URL)) {
+    protected function validateRequestedResource($filename) {
+        if (false !== filter_var($filename, FILTER_VALIDATE_URL)) {
             $this->remoteImage = true;
             return true;
         }
-
-        if($this->filesystem->exists($filename)) {
+        
+        if ($this->getContentType($filename)) {
             return true;
         }
+        
+        if ($this->filesystem->exists($filename)) {
+            return true;
+        }
+
+
 
         return false;
     }
@@ -100,8 +126,7 @@ abstract class PHPThumb
      * Returns the filename.
      * @return string
      */
-    public function getFileName()
-    {
+    public function getFileName() {
         return $this->fileName;
     }
 
@@ -110,8 +135,7 @@ abstract class PHPThumb
      * @param $fileName
      * @return PHPThumb
      */
-    public function setFileName($fileName)
-    {
+    public function setFileName($fileName) {
         $this->fileName = $fileName;
 
         return $this;
@@ -121,8 +145,7 @@ abstract class PHPThumb
      * Returns the format.
      * @return string
      */
-    public function getFormat()
-    {
+    public function getFormat() {
         return $this->format;
     }
 
@@ -131,8 +154,7 @@ abstract class PHPThumb
      * @param $format
      * @return PHPThumb
      */
-    public function setFormat($format)
-    {
+    public function setFormat($format) {
         $this->format = $format;
 
         return $this;
@@ -142,8 +164,8 @@ abstract class PHPThumb
      * Returns whether the image exists remotely, i.e. it was loaded via a URL.
      * @return bool
      */
-    public function getIsRemoteImage()
-    {
+    public function getIsRemoteImage() {
         return $this->remoteImage;
     }
+
 }

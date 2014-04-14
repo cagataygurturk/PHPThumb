@@ -13,6 +13,14 @@ class LoadTest extends \PHPUnit_Framework_TestCase
         $this->thumb = new GD(__DIR__ . '/../resources/test.jpg');
     }
 
+     public function testInitializeWithBinaryData() {
+        
+        $imagedata=file_get_contents(__DIR__ . '/../resources/test.jpg');
+        self::assertNotNull($imagedata);
+        $thumb=new GD($imagedata);
+        self::assertSame(array('width' => 500, 'height' => 375), $thumb->getCurrentDimensions());
+    }
+    
     public function testLoadFile()
     {
         self::assertSame(array('width' => 500, 'height' => 375), $this->thumb->getCurrentDimensions());
@@ -61,4 +69,7 @@ class LoadTest extends \PHPUnit_Framework_TestCase
     {
         $madeupThumb = new GD('nosuchimage.jpg');
     }
+    
+    
+   
 }
