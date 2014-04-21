@@ -784,11 +784,17 @@ class GD extends PHPThumb {
                 imagejpeg($this->oldImage, null, $this->options['jpegQuality']);
                 break;
             case 'PNG':
-            case 'STRING':
                 if ($rawData === false) {
                     header('Content-type: image/png');
                 }
                 imagepng($this->oldImage);
+                break;
+
+            case 'STRING':
+                if ($rawData === false) {
+                    header('Content-type: image/jpeg');
+                }
+                imagejpeg($this->oldImage, null, $this->options['jpegQuality']);
                 break;
         }
 
